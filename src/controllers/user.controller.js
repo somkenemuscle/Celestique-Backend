@@ -51,7 +51,7 @@ export const signUpUser = async (req, res) => {
     setRefreshToken(res, refreshToken);
 
     //Respond with success message
-    res.status(201).json({ message: 'User registered successfully', email });
+    res.status(200).json({ message: 'User registered successfully', email });
 
 }
 
