@@ -3,11 +3,11 @@ import express from 'express';
 import corsMiddleware from './middleware/cors.js';
 import passport from 'passport';
 import userRoutes from './routes/user.routes.js';
+import paymentRoutes from './routes/payment.routes.js';
 import cookieParser from 'cookie-parser';
 import { apiLimiter } from './middleware/rateLimiter.js';
 import throttle from './middleware/throttle.js';
 import morgan from 'morgan';
-
 // Load environment variables if not in production
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
@@ -44,7 +44,8 @@ app.use('/api/', apiLimiter);
 
 // routing logic
 app.use('/api/auth', userRoutes);
-
+// Payment-related routes
+app.use('/api/payments', paymentRoutes);
 
 
 // Error handling middleware
