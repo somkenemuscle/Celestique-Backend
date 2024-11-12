@@ -8,7 +8,7 @@ const router = express.Router();
 // Route to initialize payment
 router.get('/', handleAsyncErr(getAllProducts));
 
-router.get('/:gender/:category', handleAsyncErr(getProductsByGenderAndCategory));
+router.get('/:gender/:categoryName', handleAsyncErr(getProductsByGenderAndCategory));
 
 
 
