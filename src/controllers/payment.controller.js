@@ -42,7 +42,7 @@ export const verifyPayment = async (req, res) => {
 
     const { data } = response.data;
     if (data.status === 'success') {
-        // Handle successful payment (e.g., save order to database)
+        // Handle successful payment (e.g., save order to database, save payment also)
         return res.status(200).json({ success: true, data });
     } else {
         return res.status(400).json({ success: false, message: 'Payment not successful' });
