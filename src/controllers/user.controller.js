@@ -6,7 +6,6 @@ import jwt from 'jsonwebtoken';
 import { refreshSecretKey } from '../auth/config.js';
 import { signUpSchema, signInSchema } from '../validators/authValidators.js';
 import { setRefreshToken, setAccessToken, removeAccessToken, removeRefreshToken } from '../utils/authCookies.js';
-import axios from 'axios'
 import dotenv from 'dotenv'
 dotenv.config();
 
