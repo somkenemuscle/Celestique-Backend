@@ -1,18 +1,23 @@
 import express from 'express';
-import { } from '../controllers/cart.controller.js';
+import { addToCart, removeFromCart, getCart, clearCart, updateCartItemQuantity } from '../controllers/cart.controller.js';
 import handleAsyncErr from '../utils/catchAsync.js'
 import isLoggedin from '../utils/isLoggedin.js';
 
 const router = express.Router();
 
-// Route to get users cart
-router.get('/', isLoggedin, handleAsyncErr());
+// Get the user's cart
+router.get('/', isLoggedin, handleAsyncErr(getCart));
 
-// Route to add product to users cart
-router.post('/add', isLoggedin, handleAsyncErr());
+// Add a product to the user's cart
+router.post('/add', isLoggedin, handleAsyncErr(addToCart));
 
-// Route to remove product from users cart
-router.delete('/remove', isLoggedin, handleAsyncErr());
+// Update the quantity of a specific product in the cart
+router.put('/item/:productId', isLoggedin, handleAsyncErr(updateCartItemQuantity));
 
+// Remove a specific product from the cart
+router.delete('/item/:productId', isLoggedin, handleAsyncErr(removeFromCart));
+
+// Clear all products from the cart
+router.delete('/clear', isLoggedin, handleAsyncErr(clearCart));
 
 export default router;

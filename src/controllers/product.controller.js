@@ -73,10 +73,10 @@ export const getProductsByGenderAndCategory = async (req, res) => {
 
 //get a specific product by its Id
 export const getProductById = async (req, res) => {
-    const {productId}=req.params
+    const { productId } = req.params
 
-    const product=await Product.findById(productId)
-    .populate('gender')
-    .populate('categoryId')
-    res.status(200).json({product})
+    const product = await Product.findById(productId)
+        .populate('gender')
+        .populate('categoryId')
+    res.status(200).json({ product })
 }
