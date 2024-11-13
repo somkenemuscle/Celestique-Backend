@@ -41,7 +41,7 @@ export const addToCart = async (req, res) => {
 // Remove a product from the cart
 export const removeFromCart = async (req, res) => {
     const { _id } = req.user;
-    const { productId } = req.body;
+    const { productId } = req.params;
 
     // Find the user's cart
     const cart = await Cart.findOne({ user: _id });

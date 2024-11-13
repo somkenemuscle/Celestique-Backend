@@ -71,7 +71,7 @@ export const getProductsByGenderAndCategory = async (req, res) => {
     });
 };
 
-//get a specific product by its Id
+//GET A SPECIFIC PRODUCT BY ITS ID
 export const getProductById = async (req, res) => {
     const { productId } = req.params
 
