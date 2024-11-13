@@ -18,8 +18,16 @@ const cartSchema = new Schema({
                 type: Number,
                 required: true,
                 min: 1
+            },
+            subtotal: {
+                type: Number,
+                required: true
             }
         }],
+    totalPrice: {
+        type: Number,
+        default: 0
+    },
 }, { timestamps: true });
 
 // Create the Cart model

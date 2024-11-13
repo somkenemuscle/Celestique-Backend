@@ -19,19 +19,31 @@ export const addToCart = async (req, res) => {
         cart = new Cart({ user: _id, items: [] });
     }
 
+    // Calculate the item's subtotal based on the product's price
+    const itemSubtotal = product.price * quantity;
+
     // Check if the product already exists in the cart
     const existingItemIndex = cart.items.findIndex(item => item.product.toString() === productId);
 
     if (existingItemIndex >= 0) {
-        // If the product is already in the cart, update the quantity
+        // If the product is already in the cart, update the quantity and subtotal
         cart.items[existingItemIndex].quantity += quantity;
+        cart.items[existingItemIndex].subtotal += itemSubtotal;
     } else {
-        // If the product is not in the cart, add it as a new item
-        cart.items.push({ product: productId, quantity });
+        // If the product is not in the cart, add it as a new item with price and subtotal
+        cart.items.push({
+            product: productId,
+            quantity,
+            price: product.price,   // Store the price at the time of adding to the cart
+            subtotal: itemSubtotal   // Store the subtotal (price * quantity)
+        });
     }
 
-    // Save the updated cart
+    // Calculate the new total price for the cart
+    cart.totalPrice = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
     cart.updatedAt = Date.now();
+
+    // Save the updated cart
     await cart.save();
 
     return res.status(200).json({ message: 'Product added to cart', cart });
@@ -50,6 +62,13 @@ export const removeFromCart = async (req, res) => {
     }
 
     // Find the product in the cart and remove it
+    const removedItem = cart.items.find(item => item.product.toString() === productId);
+    if (removedItem) {
+        // Subtract the item's subtotal from the total price
+        cart.totalPrice -= removedItem.subtotal;
+    }
+
+    // Remove the item from the cart
     cart.items = cart.items.filter(item => item.product.toString() !== productId);
 
     // Save the updated cart
@@ -58,6 +77,7 @@ export const removeFromCart = async (req, res) => {
 
     return res.status(200).json({ message: 'Product removed from cart', cart });
 };
+
 
 // Update the quantity of a product in the cart
 export const updateCartItemQuantity = async (req, res) => {
@@ -74,11 +94,19 @@ export const updateCartItemQuantity = async (req, res) => {
         return res.status(404).json({ message: 'Cart not found' });
     }
 
-    // Find the item in the cart and update its quantity
+    // Find the item in the cart and update its quantity and subtotal
     const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
 
     if (itemIndex >= 0) {
+        const product = await Product.findById(productId);
+        const newSubtotal = product.price * quantity;
+
+        // Update the quantity and subtotal for the item
         cart.items[itemIndex].quantity = quantity;
+        cart.items[itemIndex].subtotal = newSubtotal;
+
+        // Recalculate the total price
+        cart.totalPrice = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
     } else {
         return res.status(404).json({ message: 'Product not found in cart' });
     }
@@ -89,6 +117,7 @@ export const updateCartItemQuantity = async (req, res) => {
 
     return res.status(200).json({ message: 'Cart updated successfully', cart });
 };
+
 
 // Get the user's cart
 export const getCart = async (req, res) => {
@@ -118,6 +147,7 @@ export const clearCart = async (req, res) => {
 
     // Clear the cart
     cart.items = [];
+    cart.totalPrice = 0; // Reset the total price
     cart.updatedAt = Date.now();
     await cart.save();
 
