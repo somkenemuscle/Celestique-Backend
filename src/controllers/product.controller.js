@@ -1,7 +1,7 @@
 import { Product } from '../models/product.model.js';
 import { Gender } from '../models/gender.model.js';
 import { Category } from '../models/category.model.js';
-import { findResource } from '../utils/general.js';
+import { findResource } from '../utils/findResource.js';
 
 // GET ALL PRODUCTS
 export const getAllProducts = async (req, res) => {

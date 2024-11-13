@@ -4,6 +4,7 @@ import corsMiddleware from './middleware/cors.js';
 import passport from 'passport';
 import userRoutes from './routes/user.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
+import cartRoutes from './routes/cart.routes.js';
 import cookieParser from 'cookie-parser';
 import { apiLimiter } from './middleware/rateLimiter.js';
 import throttle from './middleware/throttle.js';
@@ -49,6 +50,8 @@ app.use('/api/auth', userRoutes);
 app.use('/api/payments', paymentRoutes);
 // product-relatd routes
 app.use('/api/products', productRoutes);
+//Cart-related routes
+app.use('/api/cart', cartRoutes);
 
 
 // Error handling middleware
