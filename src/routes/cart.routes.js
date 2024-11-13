@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/', isLoggedin, handleAsyncErr(getCart));
 
 // Add a product to the user's cart
-router.post('/add/', isLoggedin, handleAsyncErr(addToCart));
+router.post('/add', isLoggedin, handleAsyncErr(addToCart));
 
 // Update the quantity of a specific product in the cart
 router.put('/item/:productId', isLoggedin, handleAsyncErr(updateCartItemQuantity));
