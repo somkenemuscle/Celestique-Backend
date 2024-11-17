@@ -5,6 +5,7 @@ import passport from 'passport';
 import userRoutes from './routes/user.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import cartRoutes from './routes/cart.routes.js';
+import orderRoutes from './routes/order.routes.js';
 import cookieParser from 'cookie-parser';
 import { apiLimiter } from './middleware/rateLimiter.js';
 import throttle from './middleware/throttle.js';
@@ -44,14 +45,20 @@ app.use(passport.initialize());
 // Apply specific rate limiter to API routes
 app.use('/api/', apiLimiter);
 
-// routing logic
+// Authentication-related routes
 app.use('/api/auth', userRoutes);
+
 // Payment-related routes
 app.use('/api/payments', paymentRoutes);
-// product-relatd routes
+
+// Product-relatd routes
 app.use('/api/products', productRoutes);
+
 //Cart-related routes
 app.use('/api/cart', cartRoutes);
+
+//Order-related routes
+app.use('/api/orders', orderRoutes);
 
 
 // Error handling middleware

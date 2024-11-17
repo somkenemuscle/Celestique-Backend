@@ -12,6 +12,10 @@ export const addToCart = async (req, res) => {
         return res.status(404).json({ message: 'Product not found' });
     }
 
+    if (quantity <= 0) {
+        return res.status(500).json({ message: 'Quantity cannot be zero or less' })
+    }
+
     // Find the user's cart (or create a new one if not exists)
     let cart = await Cart.findOne({ user: _id });
 

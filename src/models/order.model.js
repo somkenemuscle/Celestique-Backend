@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
-
 const { Schema } = mongoose;
 
 // Order Schema
 const orderSchema = new Schema({
-    userId: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
@@ -23,7 +22,21 @@ const orderSchema = new Schema({
             type: Number,
             required: true,
         },
+        subtotal: {
+            type: Number,
+            required: true,
+        },
     }],
+    shippingAddress: {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        address: { type: String, required: true },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        postalCode: { type: String },
+        country: { type: String, required: true, default: 'Nigeria' },
+        phoneNumber: { type: String, required: true },
+    },
     totalAmount: {
         type: Number,
         required: true,
@@ -36,9 +49,15 @@ const orderSchema = new Schema({
     paymentReference: {
         type: String,
         unique: true,
+        sparse: true, // To allow null values in case the payment is not completed yet
+    },
+    orderStatus: {
+        type: String,
+        enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'],
+        default: 'Processing',
     }
 }, {
-    timestamps: { createdAt: 'createdAt' }, // Automatically adds createdAt timestamp
+    timestamps: true,
 });
 
 export const Order = mongoose.model('Order', orderSchema);
