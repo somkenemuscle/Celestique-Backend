@@ -19,7 +19,7 @@ export const signUpUser = async (req, res) => {
         return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { firstname, lastname, email, password } = req.body;
+    const { firstname, lastname, email, password, phoneNumber } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -36,6 +36,7 @@ export const signUpUser = async (req, res) => {
         lastname,
         email,
         password: hashedPassword,
+        phoneNumber
     });
 
     // Save the user to the database

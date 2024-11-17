@@ -28,6 +28,14 @@ const userSchema = new Schema({
         trim: true,
         match: [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 'Must be a valid email address with format "name@gmail.com - schema"']
     },
+    phoneNumber: {
+        type: String,
+        required: [true, 'Phone number is required'],
+        trim: true,
+        match: [/^\d+$/, 'Phone number must contain only digits'],
+        minlength: [10, 'Phone number must be at least 10 digits long'],
+        maxlength: [15, 'Phone number must not exceed 15 digits']
+    },
     password: {
         type: String,
         required: [true, 'Password is required']

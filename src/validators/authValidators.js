@@ -30,6 +30,17 @@ export const signUpSchema = Joi.object({
             'string.email': 'Must be a valid email address with a valid domain like .com, .net, .org, etc.',
             'string.pattern.base': 'Must be a valid email address with format "name@gmail.com".',
         }),
+    phoneNumber: Joi.string()
+        .pattern(/^\d+$/) // Ensures the phone number contains only digits
+        .min(10)          // Adjust minimum length based on your requirements
+        .max(15)          // Adjust maximum length based on your requirements
+        .required()
+        .messages({
+            'string.pattern.base': 'Phone number can only contain digits.',
+            'string.min': 'Phone number must be at least 10 digits long.',
+            'string.max': 'Phone number must not exceed 15 digits.',
+            'string.empty': 'Phone number is required.',
+        }),
     password: Joi.string()
         .min(6)
         .max(50)
