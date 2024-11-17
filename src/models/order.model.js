@@ -8,17 +8,13 @@ const orderSchema = new Schema({
         ref: 'User',
         required: true,
     },
-    products: [{
-        productId: {
+    items: [{
+        product: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
             required: true,
         },
         quantity: {
-            type: Number,
-            required: true,
-        },
-        price: {
             type: Number,
             required: true,
         },
@@ -55,7 +51,12 @@ const orderSchema = new Schema({
         type: String,
         enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'],
         default: 'Processing',
-    }
+    },
+    paymentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Payment',
+        required: true,
+    },
 }, {
     timestamps: true,
 });
