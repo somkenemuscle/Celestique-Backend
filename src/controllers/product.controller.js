@@ -71,6 +71,7 @@ export const getProductsByGenderAndCategory = async (req, res) => {
     });
 };
 
+
 //GET A SPECIFIC PRODUCT BY ITS ID
 export const getProductById = async (req, res) => {
     const { productId } = req.params
@@ -80,3 +81,49 @@ export const getProductById = async (req, res) => {
         .populate('categoryId')
     res.status(200).json({ product })
 }
+
+// GET A SPECIFIC PRODUCT BY SEARCHING BY ITS NAME
+export const findProductBySearch = async (req, res) => {
+    const { query } = req.query;
+    const page = parseInt(req.query.page) || 1; // Default page is 1
+    const limit = 5; // Limit to 5 products per page
+    const skip = (page - 1) * limit; // Calculate the skip value for pagination
+
+    // Check if a query string is provided
+    if (!query) {
+        return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    // Use regex for partial matching of product names
+    const regex = new RegExp(query, 'i'); // 'i' for case-insensitive search
+
+    // Fetch products that match the search query as a substring
+    const products = await Product.find({
+        name: { $regex: regex } // Partial match on the product name
+    })
+        .populate('gender') // Populate gender field
+        .populate('categoryId') // Populate category field
+        .skip(skip) // Skip to the correct page
+        .limit(limit); // Limit the number of products per page
+
+    // Get the total number of matching products (for pagination info)
+    const totalProducts = await Product.countDocuments({
+        name: { $regex: regex } // Count products matching the partial query
+    });
+
+    // If no products are found, return a 404 response
+    if (products.length === 0) {
+        return res.status(404).json({ message: 'No products found' });
+    }
+
+    // Return the found products with pagination info
+    return res.status(200).json({
+        success: true,
+        results: products.length,
+        totalResults: totalProducts,
+        totalPages: Math.ceil(totalProducts / limit),
+        currentPage: page,
+        products,
+    });
+};
+
