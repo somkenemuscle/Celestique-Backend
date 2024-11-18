@@ -80,3 +80,68 @@ export const getProductById = async (req, res) => {
         .populate('categoryId')
     res.status(200).json({ product })
 }
+
+export const filterProducts = async (req, res) => {
+    const { categoryName, sortPrice, color, genderName, size, page = 1 } = req.query;
+    const limit = 5;
+    const skip = (parseInt(page) - 1) * limit;
+
+    const query = {};
+    // If categoryName is specified, add it to the query filter
+    if (categoryName) {
+        const categoryDoc = await Category.findOne({ categoryName });
+        if (!categoryDoc) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+        query.categoryId = categoryDoc._id; // Use the ObjectId of the gender
+    }
+
+    // If genderName is specified, add it to the query filter
+    if (genderName) {
+        const genderDoc = await Gender.findOne({ gender: genderName });
+        if (!genderDoc) {
+            return res.status(404).json({ message: "gender not found" });        
+        }
+        query.gender = genderDoc._id; // Use the ObjectId of the gender
+    }
+
+
+    // Filter products by color if specified
+    if (color) {
+        query.colors = color; // Filter by the specified color
+    }
+
+    // Filter products by sizes if specified
+    if (size) {
+        query.sizes = size; // Filter by the specified color
+    }
+
+    // Set sorting options
+    let sortOptions = {};
+
+    // Sorting by price (ascending or descending)
+    if (sortPrice === 'asc') {
+        sortOptions.price = 1;  // Ascending order
+    } else if (sortPrice === 'desc') {
+        sortOptions.price = -1; // Descending order
+    }
+
+
+    const totalProducts = await Product.countDocuments(query);
+
+
+    // Fetch products based on the constructed query
+
+    const products = await Product.find(query)
+        .populate('gender')
+        .populate('categoryId')
+        .skip(skip)
+        .limit(limit)
+        .sort(sortOptions);
+
+    res.status(200).json({
+        success: true, products, currentPage: page,
+        totalPages: Math.ceil(totalProducts / limit),
+        totalProducts
+    });
+}
