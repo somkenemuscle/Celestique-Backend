@@ -71,6 +71,7 @@ export const getProductsByGenderAndCategory = async (req, res) => {
     });
 };
 
+
 //GET A SPECIFIC PRODUCT BY ITS ID
 export const getProductById = async (req, res) => {
     const { productId } = req.params
@@ -81,67 +82,47 @@ export const getProductById = async (req, res) => {
     res.status(200).json({ product })
 }
 
-export const filterProducts = async (req, res) => {
-    const { categoryName, sortPrice, color, genderName, size, page = 1 } = req.query;
-    const limit = 5;
-    const skip = (parseInt(page) - 1) * limit;
+// GET A SPECIFIC PRODUCT BY SEARCHING BY ITS NAME
+export const findProductBySearch = async (req, res) => {
+    const { query } = req.query;
+    const page = parseInt(req.query.page) || 1; // Default page is 1
+    const limit = 5; // Limit to 5 products per page
+    const skip = (page - 1) * limit; // Calculate the skip value for pagination
 
-    const query = {};
-    // If categoryName is specified, add it to the query filter
-    if (categoryName) {
-        const categoryDoc = await Category.findOne({ categoryName });
-        if (!categoryDoc) {
-            return res.status(404).json({ message: "Category not found" });
-        }
-        query.categoryId = categoryDoc._id; // Use the ObjectId of the gender
+    // Check if a query string is provided
+    if (!query) {
+        return res.status(400).json({ error: 'Search query is required' });
     }
 
-    // If genderName is specified, add it to the query filter
-    if (genderName) {
-        const genderDoc = await Gender.findOne({ gender: genderName });
-        if (!genderDoc) {
-            return res.status(404).json({ message: "gender not found" });        
-        }
-        query.gender = genderDoc._id; // Use the ObjectId of the gender
-    }
+    // Use regex for partial matching of product names
+    const regex = new RegExp(query, 'i'); // 'i' for case-insensitive search
 
+    // Fetch products that match the search query as a substring
+    const products = await Product.find({
+        name: { $regex: regex } // Partial match on the product name
+    })
+        .populate('gender') // Populate gender field
+        .populate('categoryId') // Populate category field
+        .skip(skip) // Skip to the correct page
+        .limit(limit); // Limit the number of products per page
 
-    // Filter products by color if specified
-    if (color) {
-        query.colors = color; // Filter by the specified color
-    }
-
-    // Filter products by sizes if specified
-    if (size) {
-        query.sizes = size; // Filter by the specified color
-    }
-
-    // Set sorting options
-    let sortOptions = {};
-
-    // Sorting by price (ascending or descending)
-    if (sortPrice === 'asc') {
-        sortOptions.price = 1;  // Ascending order
-    } else if (sortPrice === 'desc') {
-        sortOptions.price = -1; // Descending order
-    }
-
-
-    const totalProducts = await Product.countDocuments(query);
-
-
-    // Fetch products based on the constructed query
-
-    const products = await Product.find(query)
-        .populate('gender')
-        .populate('categoryId')
-        .skip(skip)
-        .limit(limit)
-        .sort(sortOptions);
-
-    res.status(200).json({
-        success: true, products, currentPage: page,
-        totalPages: Math.ceil(totalProducts / limit),
-        totalProducts
+    // Get the total number of matching products (for pagination info)
+    const totalProducts = await Product.countDocuments({
+        name: { $regex: regex } // Count products matching the partial query
     });
-}
+
+    // If no products are found, return a 404 response
+    if (products.length === 0) {
+        return res.status(404).json({ message: 'No products found' });
+    }
+
+    // Return the found products with pagination info
+    return res.status(200).json({
+        success: true,
+        results: products.length,
+        totalResults: totalProducts,
+        totalPages: Math.ceil(totalProducts / limit),
+        currentPage: page,
+        products,
+    });
+};
