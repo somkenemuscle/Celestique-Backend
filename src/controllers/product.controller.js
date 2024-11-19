@@ -2,37 +2,45 @@ import { Product } from '../models/product.model.js';
 import { Gender } from '../models/gender.model.js';
 import { Category } from '../models/category.model.js';
 import { findResource } from '../utils/findResource.js';
+import { paginate } from '../utils/pagination.js';
+import { buildProductQuery } from '../utils/filterProducts.js';
 
-// GET ALL PRODUCTS
-export const getAllProducts = async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = 5;
-    const skip = (page - 1) * limit;
 
-    // Fetch all products 
-    const products = await Product.find()
-        .populate('gender')
+
+//GET PRODUCTS BY FILTERS
+export const filterProducts = async (req, res) => {
+    const { page } = req.query;
+    const { skip, limit } = paginate(parseInt(page) || 1, 5);
+    const { sortPrice, color, size } = req.query;
+
+    // Build the query dynamically
+    const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
+
+    // Fetch products with filters and sorting
+    const totalProducts = await Product.countDocuments(filters);
+    const products = await Product.find(filters)
         .populate('categoryId')
+        .populate('gender')
         .skip(skip)
-        .limit(limit);
-
-    const totalProducts = await Product.countDocuments();
+        .limit(limit)
+        .sort(sortOptions);
 
     res.status(200).json({
+        success: true,
         products,
         currentPage: page,
         totalPages: Math.ceil(totalProducts / limit),
-        totalProducts
+        totalProducts,
     });
 };
+
 
 
 // GET PRODUCTS BY GENDER AND CATEGORY
 export const getProductsByGenderAndCategory = async (req, res) => {
     const { gender, categoryName } = req.params;
-    const page = parseInt(req.query.page) || 1;  // Default to page 1
-    const limit = 5;  // Default to 5 products per page
-    const skip = (page - 1) * limit;
+    const { skip, limit } = paginate(parseInt(req.query.page) || 1, 5);
+
 
     // Fetch gender and category concurrently (in parallel)
     const [genderDoc, categoryDoc] = await Promise.all([
@@ -82,12 +90,13 @@ export const getProductById = async (req, res) => {
     res.status(200).json({ product })
 }
 
+
+
+
 // GET A SPECIFIC PRODUCT BY SEARCHING BY ITS NAME
 export const findProductBySearch = async (req, res) => {
-    const { query } = req.query;
-    const page = parseInt(req.query.page) || 1; // Default page is 1
-    const limit = 5; // Limit to 5 products per page
-    const skip = (page - 1) * limit; // Calculate the skip value for pagination
+    const { query, page } = req.query;
+    const { skip, limit } = paginate(parseInt(page) || 1, 5);
 
     // Check if a query string is provided
     if (!query) {
