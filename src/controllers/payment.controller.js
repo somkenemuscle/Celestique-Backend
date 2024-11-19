@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Cart } from '../models/cart.model.js';
-
+import { Product } from '../models/product.model.js';
 import { mongoose } from 'mongoose';
 import { createOrder, createPayment } from '../utils/confirmOrderAndPayment.js';
 
@@ -77,6 +77,22 @@ export const verifyPayment = async (req, res, next) => {
 
         // Step 6: Create the order, now that we have the paymentId
         const savedOrder = await createOrder(userId, cart, req, reference, savedPayment._id, totalAmount, session, paymentStatus);
+
+        // Step 7: Deduct ordered quantities from products
+        for (const item of cart.items) {
+            const product = await Product.findById(item.product).session(session);
+            if (!product) {
+                throw new Error(`Product with ID ${item.product} not found`);
+            }
+
+            // Check if stock is sufficient before updating
+            if (product.quantity < item.quantity) {
+                throw new Error(`Insufficient stock for product: ${product.name}`);
+            }
+
+            product.quantity -= item.quantity;
+            await product.save({ session }); // Save changes in the session
+        }
 
         // Step 7: Clear the user's cart if payment was successful or pending
         if (paymentStatus === 'Paid' || paymentStatus === 'Pending') {
