@@ -3,51 +3,61 @@ import { Product } from '../models/product.model.js';
 
 // Add a product to the cart
 export const addToCart = async (req, res) => {
-    const { _id } = req.user;
-    const { productId, quantity } = req.body;
+    const { _id } = req.user; // User ID from authentication middleware
+    const { productId, quantity } = req.body; // Product ID and desired quantity
 
-    // Check if the product exists
+    // Validate the requested quantity
+    if (quantity <= 0) {
+        return res.status(400).json({ message: 'Quantity must be greater than zero' });
+    }
+
+    // Fetch the product from the database
     const product = await Product.findById(productId);
     if (!product) {
         return res.status(404).json({ message: 'Product not found' });
     }
 
-    if (quantity <= 0) {
-        return res.status(500).json({ message: 'Quantity cannot be zero or less' })
+    // Check stock availability
+    if (quantity > product.quantity) {
+        return res.status(400).json({ message: `Only ${product.quantity} units of this product are available` });
     }
 
-    // Find the user's cart (or create a new one if not exists)
+    // Find the user's cart or create a new one if it doesn't exist
     let cart = await Cart.findOne({ user: _id });
-
     if (!cart) {
         cart = new Cart({ user: _id, items: [] });
     }
-
-    // Calculate the item's subtotal based on the product's price
-    const itemSubtotal = product.price * quantity;
 
     // Check if the product already exists in the cart
     const existingItemIndex = cart.items.findIndex(item => item.product.toString() === productId);
 
     if (existingItemIndex >= 0) {
-        // If the product is already in the cart, update the quantity and subtotal
-        cart.items[existingItemIndex].quantity += quantity;
-        cart.items[existingItemIndex].subtotal += itemSubtotal;
+        // Update quantity and subtotal for the existing item
+        const cartItem = cart.items[existingItemIndex];
+        const newTotalQuantity = cartItem.quantity + quantity;
+
+        // Ensure the new total quantity doesn't exceed stock
+        if (newTotalQuantity > product.quantity) {
+            return res.status(400).json({ message: `Cannot add more than ${product.quantity} units of this product to your cart` });
+        }
+
+        cartItem.quantity = newTotalQuantity;
+        cartItem.subtotal = cartItem.quantity * product.price;
     } else {
-        // If the product is not in the cart, add it as a new item with price and subtotal
+        // Add a new item to the cart
         cart.items.push({
             product: productId,
             quantity,
-            price: product.price,   // Store the price at the time of adding to the cart
-            subtotal: itemSubtotal   // Store the subtotal (price * quantity)
+            price: product.price, // Capture the product price at the time of adding
+            subtotal: quantity * product.price,
         });
     }
 
-    // Calculate the new total price for the cart
+    // Recalculate the cart's total price
     cart.totalPrice = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
     cart.updatedAt = Date.now();
 
-    // Save the updated cart
+    // Save the updated cart to the database
     await cart.save();
 
     return res.status(200).json({ message: 'Product added to cart', cart });
