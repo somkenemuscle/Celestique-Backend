@@ -61,7 +61,7 @@ export const verifyPayment = async (req, res, next) => {
 
         const userId = req.user._id;
         const paymentMethod = data.channel;
-        const paidAmount = data.amount / 100;  // Paystack returns amount in kobo, so divide by 100 to get Naira.
+        const paidAmount = data.amount / 100; // Paystack returns amount in kobo, so divide by 100 to get Naira.
 
         // Step 3: Fetch the user's cart
         const cart = await Cart.findOne({ user: userId }).session(session);
@@ -87,14 +87,27 @@ export const verifyPayment = async (req, res, next) => {
 
             // Check if stock is sufficient before updating
             if (product.quantity < item.quantity) {
-                throw new Error(`Insufficient stock for product: ${product.name}`);
+                // Refund the payment immediately
+                await axios.post(
+                    'https://api.paystack.co/refund',
+                    {
+                        transaction: reference, // Reference of the original transaction
+                        amount: paidAmount * 100, // Amount in kobo
+                        customer_note: `Refund due to insufficient stock for product: ${product.name}`,
+                    },
+                    {
+                        headers: { Authorization: `Bearer ${paystackSecretKey}` },
+                    }
+                );
+
+                throw new Error(`Insufficient stock for product: ${product.name}. Payment has been refunded.`);
             }
 
             product.quantity -= item.quantity;
             await product.save({ session }); // Save changes in the session
         }
 
-        // Step 7: Clear the user's cart if payment was successful or pending
+        // Step 8: Clear the user's cart if payment was successful or pending
         if (paymentStatus === 'Paid' || paymentStatus === 'Pending') {
             await Cart.updateOne(
                 { user: userId },
