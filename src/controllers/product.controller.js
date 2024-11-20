@@ -123,17 +123,18 @@ export const getProductsByGender = async (req, res) => {
 };
 
 
-//GET A SPECIFIC PRODUCT BY ITS ID
+//GET A SPECIFIC PRODUCT BY ITS SLUG
 export const getProductBySlug = async (req, res) => {
     const { slug } = req.params
 
     const product = await Product.findOne({ slug })
         .populate('gender')
-        .populate('categoryId')
+        .populate('categoryId');
 
     if (!product) {
         return res.status(404).json({ message: 'Product not found' });
     }
+
     res.status(200).json({ product })
 }
 
