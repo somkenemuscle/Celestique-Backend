@@ -39,8 +39,13 @@ export const filterProducts = async (req, res) => {
 // GET PRODUCTS BY GENDER AND CATEGORY
 export const getProductsByGenderAndCategory = async (req, res) => {
     const { gender, categoryName } = req.params;
-    const { skip, limit } = paginate(parseInt(req.query.page) || 1, 5);
+    const { page } = req.query;
+    const { skip, limit } = paginate(parseInt(page) || 1, 5);
+    const { sortPrice, color, size } = req.query;
 
+
+    // Build the query dynamically
+    const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
 
     // Fetch gender and category concurrently (in parallel)
     const [genderDoc, categoryDoc] = await Promise.all([
@@ -51,25 +56,24 @@ export const getProductsByGenderAndCategory = async (req, res) => {
     if (!genderDoc) return res.status(404).json({ message: 'Gender not found' });
     if (!categoryDoc) return res.status(404).json({ message: 'Category not found' });
 
+    // Add gender and category filters to the dynamic filters
+    filters.gender = genderDoc._id;
+    filters.categoryId = categoryDoc._id;
+
     // Find products by gender and category using their ObjectIds
-    const products = await Product.find({
-        gender: genderDoc._id,
-        categoryId: categoryDoc._id
-    })
+    const products = await Product.find(filters)
         .populate('gender')
         .populate('categoryId')
         .skip(skip)
-        .limit(limit);
+        .limit(limit)
+        .sort(sortOptions);
 
     if (products.length === 0) {
         return res.status(404).json({ message: 'No products found' });
     }
 
     // Get total count of matching products
-    const totalProducts = await Product.countDocuments({
-        gender: genderDoc._id,
-        categoryId: categoryDoc._id
-    });
+    const totalProducts = await Product.countDocuments(filters);
 
     res.status(200).json({
         products,
