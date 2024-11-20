@@ -124,12 +124,16 @@ export const getProductsByGender = async (req, res) => {
 
 
 //GET A SPECIFIC PRODUCT BY ITS ID
-export const getProductById = async (req, res) => {
-    const { productId } = req.params
+export const getProductBySlug = async (req, res) => {
+    const { slug } = req.params
 
-    const product = await Product.findById(productId)
+    const product = await Product.findOne({ slug })
         .populate('gender')
         .populate('categoryId')
+
+    if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+    }
     res.status(200).json({ product })
 }
 
@@ -143,7 +147,7 @@ export const findProductBySearch = async (req, res) => {
 
     // Check if a query string is provided
     if (!query) {
-        return res.status(400).json({ error: 'Search query is required' });
+        return res.status(400).json({ message: 'Search query is required' });
     }
 
     // Use regex for partial matching of product names

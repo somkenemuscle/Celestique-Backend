@@ -1,4 +1,4 @@
-import { getProductsByGenderAndCategory, getProductById, findProductBySearch, filterProducts, getProductsByGender } from "../controllers/product.controller.js";
+import { getProductsByGenderAndCategory, getProductBySlug, findProductBySearch, filterProducts, getProductsByGender } from "../controllers/product.controller.js";
 import express from 'express';
 import handleAsyncErr from '../utils/catchAsync.js';
 
@@ -17,8 +17,8 @@ router.get('/:gender/all', handleAsyncErr(getProductsByGender));
 // Route to get products by gender and category
 router.get('/:gender/:categoryName', handleAsyncErr(getProductsByGenderAndCategory));
 
-// Route to get a specific product by its ID (should come after other routes)
-router.get('/:productId', handleAsyncErr(getProductById));
+// Route to get a specific product by its Slug (should come after other routes)
+router.get('/:slug', handleAsyncErr(getProductBySlug));
 
 
 export default router;
