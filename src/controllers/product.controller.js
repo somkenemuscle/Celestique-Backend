@@ -9,9 +9,8 @@ import { buildProductQuery } from '../utils/filterProducts.js';
 
 //GET PRODUCTS BY FILTERS
 export const filterProducts = async (req, res) => {
-    const { page } = req.query;
+    const { sortPrice, color, size, page } = req.query;
     const { skip, limit } = paginate(parseInt(page) || 1, 5);
-    const { sortPrice, color, size } = req.query;
 
     // Build the query dynamically
     const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
@@ -39,10 +38,8 @@ export const filterProducts = async (req, res) => {
 // GET PRODUCTS BY GENDER AND CATEGORY
 export const getProductsByGenderAndCategory = async (req, res) => {
     const { gender, categoryName } = req.params;
-    const { page } = req.query;
+    const { sortPrice, color, size, page } = req.query;
     const { skip, limit } = paginate(parseInt(page) || 1, 5);
-    const { sortPrice, color, size } = req.query;
-
 
     // Build the query dynamically
     const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
@@ -81,6 +78,48 @@ export const getProductsByGenderAndCategory = async (req, res) => {
         totalPages: Math.ceil(totalProducts / limit),
         totalProducts
     });
+};
+
+
+export const getProductsByGender = async (req, res) => {
+    const { gender } = req.params;
+    const { sortPrice, color, size, page } = req.query;
+    const { skip, limit } = paginate(parseInt(page) || 1, 5);
+
+    // Find the gender document
+    const genderDoc = await Gender.findOne({ gender });
+    if (!genderDoc) {
+        return res.status(404).json({ message: 'Gender not found' });
+    }
+
+    // Build the query dynamically
+    const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
+
+    // Add the gender filter
+    filters.gender = genderDoc._id;
+
+    // Find products that match the gender and optional filters
+    const products = await Product.find(filters)
+        .populate('gender')
+        .populate('categoryId')
+        .sort(sortOptions) // Apply sorting options
+        .skip(skip)
+        .limit(limit);
+
+    if (products.length === 0) {
+        return res.status(404).json({ message: 'No products found for the specified gender' });
+    }
+
+    // Get the total count of matching products
+    const totalProducts = await Product.countDocuments(filters);
+
+    res.status(200).json({
+        products,
+        currentPage: page,
+        totalPages: Math.ceil(totalProducts / limit),
+        totalProducts,
+    });
+
 };
 
 
