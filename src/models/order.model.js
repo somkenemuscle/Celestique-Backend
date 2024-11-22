@@ -18,6 +18,14 @@ const orderSchema = new Schema({
             type: Number,
             required: true,
         },
+        color: {
+            type: String,
+            required: true,
+        },
+        size: {
+            type: String,
+            required: true,
+        },
         subtotal: {
             type: Number,
             required: true,

@@ -15,7 +15,7 @@ router.post('/add', isLoggedin, handleAsyncErr(addToCart));
 router.put('/item/:productId', isLoggedin, handleAsyncErr(updateCartItemQuantity));
 
 // Remove a specific product from the cart
-router.delete('/item/:productId', isLoggedin, handleAsyncErr(removeFromCart));
+router.delete('/item', isLoggedin, handleAsyncErr(removeFromCart));
 
 // Clear all products from the cart
 router.delete('/clear', isLoggedin, handleAsyncErr(clearCart));

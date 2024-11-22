@@ -3,8 +3,8 @@ import { Product } from '../models/product.model.js';
 
 // Add a product to the cart
 export const addToCart = async (req, res) => {
-    const { _id } = req.user; // User ID from authentication middleware
-    const { productId, quantity } = req.body; // Product ID and desired quantity
+    const { _id } = req.user; // User ID
+    const { productId, quantity, color, size } = req.body;
 
     // Validate the requested quantity
     if (quantity <= 0) {
@@ -17,9 +17,17 @@ export const addToCart = async (req, res) => {
         return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Check stock availability
+    // Validate color and size
+    if (!product.colors.includes(color)) {
+        return res.status(400).json({ message: `Selected color '${color}' is not available for this product.` });
+    }
+    if (!product.sizes.includes(size)) {
+        return res.status(400).json({ message: `Selected size '${size}' is not available for this product.` });
+    }
+
+    // Check quantity availability (optional: track quantity by variant if implemented)
     if (quantity > product.quantity) {
-        return res.status(400).json({ message: `Only ${product.quantity} units of this product are available` });
+        return res.status(400).json({ message: `Only ${product.quantity} units of this product are available.` });
     }
 
     // Find the user's cart or create a new one if it doesn't exist
@@ -28,17 +36,24 @@ export const addToCart = async (req, res) => {
         cart = new Cart({ user: _id, items: [] });
     }
 
-    // Check if the product already exists in the cart
-    const existingItemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    // Check if the same product, size, and color already exist in the cart
+    const existingItemIndex = cart.items.findIndex(
+        item =>
+            item.product.toString() === productId &&
+            item.color === color &&
+            item.size === size
+    );
 
     if (existingItemIndex >= 0) {
         // Update quantity and subtotal for the existing item
         const cartItem = cart.items[existingItemIndex];
         const newTotalQuantity = cartItem.quantity + quantity;
 
-        // Ensure the new total quantity doesn't exceed stock
+        // Ensure the new total quantity doesn't exceed quantity
         if (newTotalQuantity > product.quantity) {
-            return res.status(400).json({ message: `Cannot add more than ${product.quantity} units of this product to your cart` });
+            return res.status(400).json({
+                message: `Cannot add more than ${product.quantity} units of this product to your cart.`,
+            });
         }
 
         cartItem.quantity = newTotalQuantity;
@@ -48,16 +63,14 @@ export const addToCart = async (req, res) => {
         cart.items.push({
             product: productId,
             quantity,
-            price: product.price, // Capture the product price at the time of adding
+            color,
+            size,
             subtotal: quantity * product.price,
         });
     }
 
     // Recalculate the cart's total price
     cart.totalPrice = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
-    cart.updatedAt = Date.now();
-
-    // Save the updated cart to the database
     await cart.save();
 
     return res.status(200).json({ message: 'Product added to cart', cart });
@@ -67,28 +80,37 @@ export const addToCart = async (req, res) => {
 // Remove a product from the cart
 export const removeFromCart = async (req, res) => {
     const { _id } = req.user;
-    const { productId } = req.params;
+    const { productId, color, size } = req.body;
 
-    // Find the user's cart
     const cart = await Cart.findOne({ user: _id });
     if (!cart) {
         return res.status(404).json({ message: 'Cart not found' });
     }
 
-    // Find the product in the cart and remove it
-    const removedItem = cart.items.find(item => item.product.toString() === productId);
-    if (removedItem) {
-        // Subtract the item's subtotal from the total price
-        cart.totalPrice -= removedItem.subtotal;
+    // Find the specific item in the cart
+    const removedItem = cart.items.find(
+        item =>
+            item.product.toString() === productId &&
+            item.color === color &&
+            item.size === size
+    );
+
+    if (!removedItem) {
+        return res.status(404).json({ message: 'Item not found in cart' });
     }
 
+    // Subtract the item's subtotal from the total price
+    cart.totalPrice -= removedItem.subtotal;
+
     // Remove the item from the cart
-    cart.items = cart.items.filter(item => item.product.toString() !== productId);
+    cart.items = cart.items.filter(
+        item =>
+            item.product.toString() !== productId ||
+            item.color !== color ||
+            item.size !== size
+    );
 
-    // Save the updated cart
-    cart.updatedAt = Date.now();
     await cart.save();
-
     return res.status(200).json({ message: 'Product removed from cart', cart });
 };
 
@@ -96,40 +118,48 @@ export const removeFromCart = async (req, res) => {
 // Update the quantity of a product in the cart
 export const updateCartItemQuantity = async (req, res) => {
     const { _id } = req.user;
-    const { productId, quantity } = req.body;
+    const { productId, quantity, color, size } = req.body;
 
     if (quantity < 1) {
         return res.status(400).json({ message: 'Quantity must be greater than 0' });
     }
 
-    // Find the user's cart
     const cart = await Cart.findOne({ user: _id });
     if (!cart) {
         return res.status(404).json({ message: 'Cart not found' });
     }
 
-    // Find the item in the cart and update its quantity and subtotal
-    const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+    // Find the item in the cart
+    const itemIndex = cart.items.findIndex(
+        item =>
+            item.product.toString() === productId &&
+            item.color === color &&
+            item.size === size
+    );
 
     if (itemIndex >= 0) {
         const product = await Product.findById(productId);
-        const newSubtotal = product.price * quantity;
 
-        // Update the quantity and subtotal for the item
+        // Ensure quantity doesn't exceed quantity
+        if (quantity > product.quantity) {
+            return res.status(400).json({
+                message: `Cannot update to more than ${product.quantity} units.`,
+            });
+        }
+
+        // Update the quantity and subtotal
+        const newSubtotal = product.price * quantity;
         cart.items[itemIndex].quantity = quantity;
         cart.items[itemIndex].subtotal = newSubtotal;
 
-        // Recalculate the total price
+        // Recalculate total price
         cart.totalPrice = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
-    } else {
-        return res.status(404).json({ message: 'Product not found in cart' });
+        await cart.save();
+
+        return res.status(200).json({ message: 'Cart updated successfully', cart });
     }
 
-    // Save the updated cart
-    cart.updatedAt = Date.now();
-    await cart.save();
-
-    return res.status(200).json({ message: 'Cart updated successfully', cart });
+    return res.status(404).json({ message: 'Item not found in cart' });
 };
 
 

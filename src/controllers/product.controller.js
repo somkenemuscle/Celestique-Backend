@@ -35,7 +35,6 @@ export const filterProducts = async (req, res) => {
 
 
 
-// GET PRODUCTS BY GENDER AND CATEGORY
 export const getProductsByGenderAndCategory = async (req, res) => {
     const { gender, categoryName } = req.params;
     const { sortPrice, color, size, page } = req.query;
@@ -46,8 +45,10 @@ export const getProductsByGenderAndCategory = async (req, res) => {
 
     // Fetch gender and category concurrently (in parallel)
     const [genderDoc, categoryDoc] = await Promise.all([
-        findResource(Gender, { gender }, 'Gender'),
-        findResource(Category, { categoryName }, 'Category')
+        // Using case-insensitive regex to find gender
+        findResource(Gender, { gender: { $regex: new RegExp('^' + gender + '$', 'i') } }, 'Gender'),
+        // Using case-insensitive regex to find category
+        findResource(Category, { categoryName: { $regex: new RegExp('^' + categoryName + '$', 'i') } }, 'Category')
     ]);
 
     if (!genderDoc) return res.status(404).json({ message: 'Gender not found' });
@@ -86,8 +87,9 @@ export const getProductsByGender = async (req, res) => {
     const { sortPrice, color, size, page } = req.query;
     const { skip, limit } = paginate(parseInt(page) || 1, 5);
 
-    // Find the gender document
-    const genderDoc = await Gender.findOne({ gender });
+    // Use a case-insensitive regular expression to find gender
+    const genderDoc = await Gender.findOne({ gender: { $regex: new RegExp('^' + gender + '$', 'i') } });
+
     if (!genderDoc) {
         return res.status(404).json({ message: 'Gender not found' });
     }
@@ -119,7 +121,6 @@ export const getProductsByGender = async (req, res) => {
         totalPages: Math.ceil(totalProducts / limit),
         totalProducts,
     });
-
 };
 
 
