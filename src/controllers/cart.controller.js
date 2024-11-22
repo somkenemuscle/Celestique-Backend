@@ -65,14 +65,20 @@ export const addToCart = async (req, res) => {
             quantity,
             color,
             size,
-            subtotal: quantity * product.price,
+            subtotal: quantity * product.price
         });
     }
 
-    // Recalculate the cart's total price
-    cart.totalPrice = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
+    // Recalculate the cart's subtotal (sum of item subtotals)
+    cart.subtotal = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
+
+    // Recalculate the cart's total price (subtotal + delivery fee)
+    cart.totalPrice = cart.subtotal + cart.deliveryFee;
+
+    // Save the updated cart
     await cart.save();
 
+    // Return the updated cart with the new subtotal and total price
     return res.status(200).json({ message: 'Product added to cart', cart });
 };
 

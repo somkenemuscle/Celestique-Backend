@@ -31,6 +31,14 @@ const cartSchema = new Schema({
             required: true
         }
     }],
+    deliveryFee: {
+        type: Number,
+        default: 1000
+    },
+    subtotal: {
+        type: Number,
+        required: true
+    },
     totalPrice: {
         type: Number,
         default: 0
