@@ -19,7 +19,6 @@ export const initializePayment = async (req, res) => {
         return res.status(400).send({ error: 'Invalid or missing shippingAddress.' });
     }
 
-
     // Add shippingAddress to cookie
     res.cookie('shippingAddress', shippingAddress, {
         httpOnly: true,
@@ -126,11 +125,11 @@ export const verifyPayment = async (req, res, next) => {
                     }
                 );
                 const { data } = response.data;
-                console.log(data)
+                console.log(data.status)
                 if (data.status === 'success') {
-                    console.log('Refund processed successfully:', response.data);
+                    console.log('Refund processed successfully:');
                 } else {
-                    console.error('Refund failed:', response.data);
+                    console.error('Refund failed:');
                 }
             }
 
