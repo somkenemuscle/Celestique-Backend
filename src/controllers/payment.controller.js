@@ -7,8 +7,28 @@ import { createOrder, createPayment } from '../utils/confirmOrderAndPayment.js';
 
 // Initialize payment with Paystack
 export const initializePayment = async (req, res) => {
-    const { amount } = req.body; // Get email and amount from the request body
+    const { amount, shippingAddress } = req.body; // Get email and amount from the request body
     const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
+
+    if (!amount) {
+        return res.status(400).send({ error: 'Amount was not given.' });
+    }
+
+    // Ensure shippingAddress is provided
+    if (!shippingAddress || typeof shippingAddress !== 'object') {
+        return res.status(400).send({ error: 'Invalid or missing shippingAddress.' });
+    }
+
+
+    // Add shippingAddress to cookie
+    res.cookie('shippingAddress', shippingAddress, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Strict',
+        maxAge: 15 * 60 * 1000,
+        path: '/',
+    });
+
 
     // Make request to Paystack to initialize payment
     const response = await axios.post(
@@ -17,7 +37,7 @@ export const initializePayment = async (req, res) => {
             email: req.user.email,
             amount: amount * 100,
             callback_url: 'http://localhost:3000/verify'
-        }, // Paystack expects amount in kobo
+        },
         {
             headers: {
                 Authorization: `Bearer ${paystackSecretKey}`,
@@ -32,9 +52,15 @@ export const initializePayment = async (req, res) => {
 
 // Verify payment with Paystack
 export const verifyPayment = async (req, res, next) => {
-    const { reference, totalAmount } = req.body; // Retrieve reference and expected totalAmount from the request body
-    if (!reference) {
-        return res.status(400).json({ error: 'No reference found' });
+    const { reference, totalAmount } = req.body;
+    const { shippingAddress } = req.cookies;
+
+    if (!shippingAddress) {
+        return res.status(400).json({ error: 'No shippingAddress found' });
+    }
+
+    if (!reference || !totalAmount) {
+        return res.status(400).json({ error: 'No reference or totalAmount found' });
     }
 
     const paystackSecretKey = process.env.PAYSTACK_SECRET_KEY;
@@ -76,7 +102,7 @@ export const verifyPayment = async (req, res, next) => {
         const savedPayment = await createPayment(userId, paidAmount, reference, data.id, paymentMethod, session, paymentStatus);
 
         // Step 6: Create the order, now that we have the paymentId
-        const savedOrder = await createOrder(userId, cart, req, reference, savedPayment._id, totalAmount, session, paymentStatus);
+        const savedOrder = await createOrder(userId, cart, shippingAddress, reference, savedPayment._id, totalAmount, session, paymentStatus);
 
         // Step 7: Deduct ordered quantities from products
         for (const item of cart.items) {
@@ -111,7 +137,7 @@ export const verifyPayment = async (req, res, next) => {
         if (paymentStatus === 'Paid' || paymentStatus === 'Pending') {
             await Cart.updateOne(
                 { user: userId },
-                { $set: { items: [], totalPrice: 0, updatedAt: Date.now() } },
+                { $set: { items: [], totalPrice: 0, subtotal: 0, updatedAt: Date.now() } },
                 { session }
             );
         }
@@ -119,6 +145,11 @@ export const verifyPayment = async (req, res, next) => {
         // Commit the transaction if everything succeeded
         await session.commitTransaction();
         session.endSession();
+
+        //Remove shippingAddress from cookies
+        res.cookie('shippingAddress', '', {
+            httpOnly: true, secure: false, sameSite: 'Strict', maxAge: 0, path: '/'
+        });
 
         // Send success response
         return res.status(200).json({

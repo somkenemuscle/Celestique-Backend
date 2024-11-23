@@ -17,11 +17,11 @@ export const createPayment = async (userId, paidAmount, reference, transactionId
 };
 
 // Function to create a new order
-export const createOrder = async (userId, cart, req, reference, paymentId, totalAmount, session, paymentStatus) => {
+export const createOrder = async (userId, cart, shippingAddress, reference, paymentId, totalAmount, session, paymentStatus) => {
     const newOrder = new Order({
         user: userId,
         items: cart.items,
-        shippingAddress: req.body.shippingAddress,
+        shippingAddress,
         totalAmount,
         paymentStatus,
         paymentReference: reference,

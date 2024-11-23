@@ -106,6 +106,8 @@ export const removeFromCart = async (req, res) => {
     }
 
     // Subtract the item's subtotal from the total price
+    cart.subtotal -= removedItem.subtotal;
+    // Subtract the item's subtotal from the carts Subtotal
     cart.totalPrice -= removedItem.subtotal;
 
     // Remove the item from the cart
@@ -158,8 +160,13 @@ export const updateCartItemQuantity = async (req, res) => {
         cart.items[itemIndex].quantity = quantity;
         cart.items[itemIndex].subtotal = newSubtotal;
 
-        // Recalculate total price
-        cart.totalPrice = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
+        // Recalculate the cart's subtotal (sum of item subtotals)
+        cart.subtotal = cart.items.reduce((acc, item) => acc + item.subtotal, 0);
+
+        // Recalculate the cart's total price (subtotal + delivery fee)
+        cart.totalPrice = cart.subtotal + cart.deliveryFee;
+
+
         await cart.save();
 
         return res.status(200).json({ message: 'Cart updated successfully', cart });
@@ -198,6 +205,7 @@ export const clearCart = async (req, res) => {
     // Clear the cart
     cart.items = [];
     cart.totalPrice = 0; // Reset the total price
+    cart.subtotal = 0; // Reset the total price
     cart.updatedAt = Date.now();
     await cart.save();
 
