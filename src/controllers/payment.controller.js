@@ -125,9 +125,9 @@ export const verifyPayment = async (req, res, next) => {
                     }
                 );
                 const { data } = response.data;
-                console.log(data.status)
-                if (data.status === 'success') {
+                if (data.status === 'processed') {
                     console.log('Refund processed successfully:');
+                    return
                 } else {
                     console.error('Refund failed:');
                 }
