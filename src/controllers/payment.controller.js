@@ -114,7 +114,7 @@ export const verifyPayment = async (req, res, next) => {
             // Check if stock is sufficient before updating
             if (product.quantity < item.quantity) {
                 // Refund the payment immediately
-                await axios.post(
+                const response = await axios.post(
                     'https://api.paystack.co/refund',
                     {
                         transaction: reference, // Reference of the original transaction
@@ -125,8 +125,13 @@ export const verifyPayment = async (req, res, next) => {
                         headers: { Authorization: `Bearer ${paystackSecretKey}` },
                     }
                 );
-
-                throw new Error(`Insufficient stock for product: ${product.name}. Payment has been refunded.`);
+                const { data } = response.data;
+                console.log(data)
+                if (data.status === 'success') {
+                    console.log('Refund processed successfully:', response.data);
+                } else {
+                    console.error('Refund failed:', response.data);
+                }
             }
 
             product.quantity -= item.quantity;

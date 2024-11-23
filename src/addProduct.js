@@ -5,6 +5,10 @@ import { Product } from './models/product.model.js'; // Adjust the path if neces
 const genderId = new mongoose.Types.ObjectId('672ff4c23b4cc9b881d85201');
 const categoryId = new mongoose.Types.ObjectId('672ff37b169ba3282a4d102a');
 
+//WOMEN
+// 672ff4c23b4cc9b881d85204 
+
+
 // New product data
 const newProduct = {
     name: 'Japan Anchor Shirt',
@@ -15,7 +19,7 @@ const newProduct = {
     ],
     gender: genderId, // Referencing the Gender ID
     categoryId: categoryId, // Referencing the Category ID
-    price: 100.00, // Example price (change this accordingly)
+    price: 150.00, // Example price (change this accordingly)
     sizes: ['S', 'M', 'L', 'XL'], // Example sizes
     quantity: 50, // Example quantity
     description: 'A stylish T-shirt perfect for casual and complex wears.', // Example description
