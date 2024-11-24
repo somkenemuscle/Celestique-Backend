@@ -63,7 +63,7 @@ app.use('/api/orders', orderRoutes);
 
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, res) => {
     // Extract status and message from the error object, defaulting to 500 and a generic message
     const status = err.status || 500;
     const message = err.message || 'Something went wrong';
