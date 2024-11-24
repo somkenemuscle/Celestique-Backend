@@ -24,6 +24,10 @@ export const filterProducts = async (req, res) => {
         .limit(limit)
         .sort(sortOptions);
 
+    if (products.length === 0) {
+        return res.status(404).json({ message: 'No products found' });
+    }
+
     res.status(200).json({
         success: true,
         products,
@@ -39,6 +43,10 @@ export const getProductsByGenderAndCategory = async (req, res) => {
     const { gender, categoryName } = req.params;
     const { sortPrice, color, size, page } = req.query;
     const { skip, limit } = paginate(parseInt(page) || 1, 5);
+
+    if (!gender || !categoryName) {
+        return res.status(400).json({ message: 'Gender and Category params are required' });
+    }
 
     // Build the query dynamically
     const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
@@ -88,6 +96,10 @@ export const getProductsByGender = async (req, res) => {
     const { sortPrice, color, size, page } = req.query;
     const { skip, limit } = paginate(parseInt(page) || 1, 5);
 
+    if (!gender) {
+        return res.status(400).json({ message: 'Gender param is required' });
+    }
+
     // Use a case-insensitive regular expression to find gender
     const genderDoc = await Gender.findOne({ gender: { $regex: new RegExp('^' + gender + '$', 'i') } });
 
@@ -128,6 +140,10 @@ export const getProductsByGender = async (req, res) => {
 //GET A SPECIFIC PRODUCT BY ITS SLUG
 export const getProductBySlug = async (req, res) => {
     const { slug } = req.params
+
+    if (!slug) {
+        return res.status(400).json({ message: 'Slug param is required' });
+    }
 
     const product = await Product.findOne({ slug })
         .populate('gender')

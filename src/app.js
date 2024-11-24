@@ -11,6 +11,7 @@ import { apiLimiter } from './middleware/rateLimiter.js';
 import throttle from './middleware/throttle.js';
 import morgan from 'morgan';
 import productRoutes from './routes/product.routes.js'
+
 // Load environment variables if not in production
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config();
