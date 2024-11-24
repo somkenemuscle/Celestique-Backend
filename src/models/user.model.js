@@ -6,7 +6,6 @@ const userSchema = new Schema({
     firstname: {
         type: String,
         required: [true, 'Firstname is required'],
-        unique: [true, 'User already exists'],
         trim: true,
         minlength: [4, 'Firstname must be at least 4 characters long'],
         maxlength: [20, 'Firstname must be no more than 20 characters long'],
@@ -15,7 +14,6 @@ const userSchema = new Schema({
     lastname: {
         type: String,
         required: [true, 'Lastname is required'],
-        unique: [true, 'User already exists'],
         trim: true,
         minlength: [4, 'Lastname must be at least 4 characters long'],
         maxlength: [20, 'Lastname must be no more than 20 characters long'],
