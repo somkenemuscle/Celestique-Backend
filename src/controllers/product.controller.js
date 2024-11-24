@@ -34,7 +34,7 @@ export const filterProducts = async (req, res) => {
 };
 
 
-
+//GET PRODUCTS BY GENDER & CATEGORY
 export const getProductsByGenderAndCategory = async (req, res) => {
     const { gender, categoryName } = req.params;
     const { sortPrice, color, size, page } = req.query;
@@ -82,6 +82,7 @@ export const getProductsByGenderAndCategory = async (req, res) => {
 };
 
 
+//GET PRODUCTS BY GENDER
 export const getProductsByGender = async (req, res) => {
     const { gender } = req.params;
     const { sortPrice, color, size, page } = req.query;
