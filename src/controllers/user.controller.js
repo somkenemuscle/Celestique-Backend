@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { refreshSecretKey } from '../auth/config.js';
 import { signUpSchema, signInSchema } from '../validators/authValidators.js';
 import { setRefreshToken, setAccessToken, removeAccessToken, removeRefreshToken } from '../utils/authCookies.js';
+import axios from 'axios'
 import dotenv from 'dotenv'
 dotenv.config();
 
@@ -19,7 +20,21 @@ export const signUpUser = async (req, res) => {
         return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { firstname, lastname, email, password, phoneNumber } = req.body;
+    const { firstname, lastname, email, password, phoneNumber, recaptchaToken } = req.body;
+
+    // Verify reCAPTCHA token
+    const recaptchaResponse = await axios.post(`https://www.google.com/recaptcha/api/siteverify`, null, {
+        params: {
+            secret: process.env.RECAPTCHA_SECRET_KEY,
+            response: recaptchaToken
+        }
+    });
+
+    const { success } = recaptchaResponse.data;
+
+    if (!success) {
+        return res.status(400).json({ message: 'reCAPTCHA verification failed' });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -51,7 +66,7 @@ export const signUpUser = async (req, res) => {
     setRefreshToken(res, refreshToken);
 
     //Respond with success message
-    res.status(200).json({ message: 'User registered successfully', email });
+    res.status(200).json({ message: 'User registered successfully', firstname });
 
 }
 
@@ -66,7 +81,7 @@ export const signInUser = async (req, res) => {
     }
     const { email, password } = req.body;
 
-    // Check if the user exists by their username
+    // Check if the user exists by their ue email
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -85,7 +100,7 @@ export const signInUser = async (req, res) => {
         setAccessToken(res, accessToken);
         setRefreshToken(res, refreshToken);
 
-        return res.status(200).json({ message: 'Sign In successful', email });
+        return res.status(200).json({ message: 'Sign In successful', firstname: user.firstname });
     } else {
         // Passwords don't match
         return res.status(401).json({ message: 'Invalid email or password', code: 'INVALID_EMAIL_OR_PASSWORD' });

@@ -147,6 +147,9 @@ export const verifyPayment = async (req, res, next) => {
             );
         }
 
+        // Fetch the updated cart to return its latest state
+        const updatedCart = await Cart.findOne({ user: userId }).session(session);
+
         // Commit the transaction if everything succeeded
         await session.commitTransaction();
         session.endSession();
@@ -162,6 +165,7 @@ export const verifyPayment = async (req, res, next) => {
             message: 'Order created and payment verified successfully',
             order: savedOrder,
             payment: savedPayment,
+            cart: updatedCart
         });
 
     } catch (error) {

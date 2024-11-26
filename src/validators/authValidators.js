@@ -51,6 +51,7 @@ export const signUpSchema = Joi.object({
             'string.max': 'Password must be less than 50 characters long.',
             'string.pattern.base': 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character.',
         }),
+    recaptchaToken: Joi.string().required()  // Add this line to allow the recaptchaToken
 });
 
 

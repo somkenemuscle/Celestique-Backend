@@ -39,12 +39,8 @@ export const addToCart = async (req, res) => {
         return res.status(400).json({ message: `Only ${availableQuantity} units of this product are available.` });
     }
 
-    // Find the user's cart or create a new one if it doesn't exist
-    let cart = await Cart.findOneAndUpdate(
-        { user: userId },
-        { $setOnInsert: { items: [] } },
-        { new: true, upsert: true }
-    );
+    // Find the user's cart 
+    let cart = await Cart.findOne({ user: userId });
 
     // Check if the same product, size, and color already exist in the cart
     const existingItemIndex = cart.items.findIndex(
@@ -214,12 +210,16 @@ export const updateCartItemQuantity = async (req, res) => {
 export const getCart = async (req, res) => {
     const userId = req.user._id;
 
-    // Find the user's cart (error probably)
-    const cart = await Cart.findOne({ user: userId }).populate('items.product');
+    // // Find the user's cart (error probably)
+    // const cart = await Cart.findOne({ user: userId })
 
-    if (!cart) {
-        return res.status(404).json({ message: 'Cart not found' });
-    }
+    // Find the user's cart or create a new one if it doesn't exist
+    const cart = await Cart.findOneAndUpdate(
+        { user: userId },
+        { $setOnInsert: { items: [] } },
+        { new: true, upsert: true }
+    ).populate('items.product');
+
 
     // Handle case where there are no items in the cart
     if (cart.items.length === 0) {
