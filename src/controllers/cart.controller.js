@@ -92,13 +92,20 @@ export const addToCart = async (req, res) => {
 // Remove a product from the cart
 export const removeFromCart = async (req, res) => {
     const userId = req.user._id;
-    const { productId, color, size } = req.body;
+    const { productId } = req.params;
+    const { color, size } = req.query;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
         return res.status(400).json({ message: 'Invalid product ID format.' });
     }
 
-    const cart = await Cart.findOne({ user: userId });
+    const cart = await Cart.findOne({ user: userId }).populate({
+        path: 'items.product',
+        populate: {
+            path: 'gender',
+        },
+    });
+
     if (!cart) {
         return res.status(404).json({ message: 'Cart not found' });
     }
@@ -106,7 +113,7 @@ export const removeFromCart = async (req, res) => {
     // Find the specific item in the cart
     const removedItemIndex = cart.items.findIndex(
         item =>
-            item.product.toString() === productId &&
+            item.product._id.toString() === productId &&
             item.color === color &&
             item.size === size
     );
@@ -141,7 +148,9 @@ export const removeFromCart = async (req, res) => {
 // Update the quantity of a product in the cart
 export const updateCartItemQuantity = async (req, res) => {
     const userId = req.user._id;
-    const { productId, quantity, color, size } = req.body;
+    const { productId } = req.params;
+    const { color, size, quantity } = req.query;
+
 
     // Validate productId format
     if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -156,7 +165,12 @@ export const updateCartItemQuantity = async (req, res) => {
 
     // Fetch the cart and product in parallel to reduce DB calls
     const [cart, product] = await Promise.all([
-        Cart.findOne({ user: userId }),
+        Cart.findOne({ user: userId }).populate({
+            path: 'items.product',
+            populate: {
+                path: 'gender',
+            },
+        }),
         Product.findById(productId)
     ]);
 
@@ -179,7 +193,7 @@ export const updateCartItemQuantity = async (req, res) => {
 
     // Find the item in the cart
     const itemIndex = cart.items.findIndex(
-        item => item.product.toString() === productId &&
+        item => item.product._id.toString() === productId &&
             item.color === color &&
             item.size === size
     );
@@ -210,15 +224,17 @@ export const updateCartItemQuantity = async (req, res) => {
 export const getCart = async (req, res) => {
     const userId = req.user._id;
 
-    // // Find the user's cart (error probably)
-    // const cart = await Cart.findOne({ user: userId })
-
     // Find the user's cart or create a new one if it doesn't exist
     const cart = await Cart.findOneAndUpdate(
         { user: userId },
         { $setOnInsert: { items: [] } },
         { new: true, upsert: true }
-    ).populate('items.product');
+    ).populate({
+        path: 'items.product',
+        populate: {
+            path: 'gender',
+        },
+    });
 
 
     // Handle case where there are no items in the cart
