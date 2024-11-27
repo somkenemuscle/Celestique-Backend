@@ -22,8 +22,8 @@ export const initializePayment = async (req, res) => {
     // Add shippingAddress to cookie
     res.cookie('shippingAddress', shippingAddress, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'Strict',
+        secure: true,
+        sameSite: 'None',
         maxAge: 15 * 60 * 1000,
         path: '/',
     });
