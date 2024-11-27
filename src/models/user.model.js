@@ -7,17 +7,17 @@ const userSchema = new Schema({
         type: String,
         required: [true, 'Firstname is required'],
         trim: true,
-        minlength: [4, 'Firstname must be at least 4 characters long'],
+        minlength: [2, 'Firstname must be at least 4 characters long'],
         maxlength: [20, 'Firstname must be no more than 20 characters long'],
-        match: [/^[a-zA-Z0-9._-]+$/, 'Firstname can only contain letters, numbers, dots, underscores, or dashes - schema']
+        match: [/^[a-zA-Z]+$/, 'Firstname can only contain letters.']
     },
     lastname: {
         type: String,
         required: [true, 'Lastname is required'],
         trim: true,
-        minlength: [4, 'Lastname must be at least 4 characters long'],
+        minlength: [2, 'Lastname must be at least 4 characters long'],
         maxlength: [20, 'Lastname must be no more than 20 characters long'],
-        match: [/^[a-zA-Z0-9._-]+$/, 'Username can only contain letters, numbers, dots, underscores, or dashes - schema']
+        match: [/^[a-zA-Z]+$/, 'Username can only contain letters.']
     },
     email: {
         type: String,
