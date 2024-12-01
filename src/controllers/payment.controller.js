@@ -89,7 +89,13 @@ export const verifyPayment = async (req, res, next) => {
         const paidAmount = data.amount / 100;  // Convert amount to the actual value
 
         //3: Fetch the user's cart
-        const cart = await Cart.findOne({ user: userId }).session(session);
+        const cart = await Cart.findOne({ user: userId }).populate({
+            path: 'items.product',
+            populate: {
+                path: 'gender',
+            },
+        }).session(session);
+
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ message: 'Cart is empty' });
         }
@@ -105,7 +111,7 @@ export const verifyPayment = async (req, res, next) => {
 
         //7: Deduct ordered quantities from products
         for (const item of cart.items) {
-            const product = await Product.findById(item.product).session(session);
+            const product = await Product.findById(item.product._id).session(session);
             if (!product) {
                 return res.status(400).json({ message: `Product with ID ${item.product} not found` });
             }

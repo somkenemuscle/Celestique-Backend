@@ -211,7 +211,7 @@ export const updateCartItemQuantity = async (req, res) => {
         // Save the updated cart
         await cart.save();
 
-        return res.status(200).json({ message: 'Cart updated successfully', cart });
+        return res.status(200).json({ message: 'Cart updated', cart });
     }
 
     // If item not found in cart
