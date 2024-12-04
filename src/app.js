@@ -59,7 +59,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 
 //Order-related routes
-app.use('/api/orders', orderRoutes);
+app.use('/api/orders',orderRoutes);
 
 
 // Error handling middleware
