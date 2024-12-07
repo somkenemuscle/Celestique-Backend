@@ -18,7 +18,7 @@ export const getUserOrders = async (req, res) => {
 
 };
 
-// Fetch orders for the authenticated user
+// Fetch details of an orders for the authenticated user
 export const getUserOrderDetails = async (req, res) => {
     const OrderId = req.params.orderId
 
