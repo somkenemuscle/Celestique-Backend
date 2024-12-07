@@ -9,6 +9,6 @@ const router = express.Router();
 router.get('/', isLoggedin, handleAsyncErr(getUserOrders));
 
 // Get the user's Orders
-router.get('/:orderId',isLoggedin, handleAsyncErr(getUserOrderDetails))
+router.get('/:orderId', isLoggedin, handleAsyncErr(getUserOrderDetails))
 
 export default router;
