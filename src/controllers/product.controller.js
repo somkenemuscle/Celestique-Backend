@@ -10,7 +10,7 @@ import { buildProductQuery } from '../utils/filterProducts.js';
 //GET PRODUCTS BY FILTERS
 export const filterProducts = async (req, res) => {
     const { sortPrice, color, size, page } = req.query;
-    const { skip, limit } = paginate(parseInt(page) || 1, 10);
+    const { skip, limit } = paginate(parseInt(page) || 1, 8);
 
     // Build the query dynamically
     const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
