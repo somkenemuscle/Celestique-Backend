@@ -1,13 +1,17 @@
 //SET COOKIES
 export function setRefreshToken(res, refreshToken) {
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+    const bufferTimeInMs = 60 * 60 * 1000; // Subtract 1 hour (3600000 ms)
+
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: false,
         sameSite: 'Strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: sevenDaysInMs - bufferTimeInMs, // Slightly less than 7 days
         path: '/'
     });
 }
+
 
 
 export function setAccessToken(res, accessToken) {
@@ -15,7 +19,7 @@ export function setAccessToken(res, accessToken) {
         httpOnly: true,
         secure: false,
         sameSite: 'Strict',
-        maxAge: 15 * 60 * 1000, // 15 minutes
+        maxAge: 14 * 60 * 1000, // 14 minutes
         path: '/'
     });
 }
