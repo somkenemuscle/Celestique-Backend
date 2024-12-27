@@ -11,6 +11,10 @@ import { apiLimiter } from './middleware/rateLimiter.js';
 import throttle from './middleware/throttle.js';
 import morgan from 'morgan';
 import productRoutes from './routes/product.routes.js'
+import isLoggedin from './utils/isLoggedin.js';
+
+
+
 
 // Load environment variables if not in production
 if (process.env.NODE_ENV !== 'production') {
@@ -46,20 +50,23 @@ app.use(passport.initialize());
 // Apply specific rate limiter to API routes
 app.use('/api/', apiLimiter);
 
+// Product-relatd routes
+app.use('/api/products', productRoutes);
+
 // Authentication-related routes
 app.use('/api/auth', userRoutes);
 
+//Authenticate Routes Below this middleware
+app.use(isLoggedin);
+
 // Payment-related routes
 app.use('/api/payments', paymentRoutes);
-
-// Product-relatd routes
-app.use('/api/products', productRoutes);
 
 //Cart-related routes
 app.use('/api/cart', cartRoutes);
 
 //Order-related routes
-app.use('/api/orders',orderRoutes);
+app.use('/api/orders', orderRoutes);
 
 
 // Error handling middleware

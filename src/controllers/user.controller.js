@@ -16,9 +16,7 @@ dotenv.config();
 export const signUpUser = async (req, res) => {
     // Validate the request body using Joi
     const { error } = signUpSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-    }
+    if (error) return res.status(400).json({ message: error.details[0].message });
 
     const { firstname, lastname, email, password, phoneNumber, recaptchaToken } = req.body;
 
@@ -32,15 +30,11 @@ export const signUpUser = async (req, res) => {
 
     const { success } = recaptchaResponse.data;
 
-    if (!success) {
-        return res.status(400).json({ message: 'reCAPTCHA verification failed' });
-    }
+    if (!success) return res.status(400).json({ message: 'reCAPTCHA verification failed' });
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
-    }
+    if (existingUser) return res.status(409).json({ message: 'User already exists' });
 
     // Hash the password before storing in the database (hash and salt)
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -76,17 +70,15 @@ export const signInUser = async (req, res) => {
 
     // Validate the request body using Joi
     const { error } = signInSchema.validate(req.body);
-    if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-    }
+
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
     const { email, password } = req.body;
 
     // Check if the user exists by their ue email
     const user = await User.findOne({ email });
 
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(password, user.password);
@@ -103,7 +95,7 @@ export const signInUser = async (req, res) => {
         return res.status(200).json({ message: 'Sign In successful', firstname: user.firstname });
     } else {
         // Passwords don't match
-        return res.status(401).json({ message: 'Invalid email or password', code: 'INVALID_EMAIL_OR_PASSWORD' });
+        return res.status(400).json({ message: 'Invalid email or password', code: 'INVALID_EMAIL_OR_PASSWORD' });
     }
 }
 
@@ -118,25 +110,26 @@ export const logOutUser = async (req, res) => {
 
 
 
-
 //Refresh token controller function
 export const refreshToken = (req, res) => {
     const refreshToken = req.cookies?.refreshToken;
 
     // Check if refreshToken is present in cookies
-    if (!refreshToken) {
-        return res.status(401).json({ message: 'You dont have the permission for this, Please log in.', code: 'REFRESH_TOKEN_NOT_FOUND' });
-    }
+    if (!refreshToken) return res.status(401).json(
+        {
+            message: 'You dont have the permission for this, Please log in.',
+            code: 'REFRESH_TOKEN_NOT_FOUND'
+        });
+
 
     // Verify the refresh token
     jwt.verify(refreshToken, refreshSecretKey, (err, user) => {
-        if (err) {
-            return res.status(403).json({ message: 'Session timed out. Please log in again.' });
-        }
+        if (err) return res.status(403).json({ message: 'Session timed out. Please log in again.' });
 
         // Generate a new access token
         const accessToken = generateAccessToken({ email: user.email, _id: user._id });
 
+        // Set the new access token in the cookies
         setAccessToken(res, accessToken);
 
         return res.status(200).json({ message: 'Access token refreshed successfully' });
