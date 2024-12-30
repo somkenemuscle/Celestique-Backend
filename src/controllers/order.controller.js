@@ -11,7 +11,7 @@ export const getUserOrders = async (req, res) => {
         .populate('items.product', 'name price images'); // Populate product details if needed
 
     if (orders.length === 0) {
-        return res.status(404).json({ message: 'No orders found' });
+        return res.status(404).json({ message: 'You have not made any orders' });
     }
 
     res.status(200).json({ success: true, orders });
