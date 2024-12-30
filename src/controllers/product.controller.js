@@ -4,7 +4,7 @@ import { Category } from '../models/category.model.js';
 import { findResource } from '../utils/findResource.js';
 import { paginate } from '../utils/pagination.js';
 import { buildProductQuery } from '../utils/filterProducts.js';
-
+import { FavoriteProduct } from '../models/favoriteProduct.model.js';
 
 
 //GET PRODUCTS BY FILTERS
@@ -201,4 +201,5 @@ export const findProductBySearch = async (req, res) => {
         products,
     });
 };
+
 
