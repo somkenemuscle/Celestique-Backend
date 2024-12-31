@@ -4,13 +4,12 @@ import { Category } from '../models/category.model.js';
 import { findResource } from '../utils/findResource.js';
 import { paginate } from '../utils/pagination.js';
 import { buildProductQuery } from '../utils/filterProducts.js';
-import { FavoriteProduct } from '../models/favoriteProduct.model.js';
 
 
 //GET PRODUCTS BY FILTERS
 export const filterProducts = async (req, res) => {
     const { sortPrice, color, size, page } = req.query;
-    const { skip, limit } = paginate(parseInt(page) || 1, 8);
+    const { skip, limit } = paginate(parseInt(page) || 1, 4);
 
     // Build the query dynamically
     const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
