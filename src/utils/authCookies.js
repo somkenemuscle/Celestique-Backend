@@ -5,8 +5,8 @@ export function setRefreshToken(res, refreshToken) {
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'Strict',
+        secure: true,
+        sameSite: 'None',
         maxAge: sevenDaysInMs - bufferTimeInMs, // Slightly less than 7 days
         path: '/'
     });
@@ -17,8 +17,8 @@ export function setRefreshToken(res, refreshToken) {
 export function setAccessToken(res, accessToken) {
     res.cookie('accessToken', accessToken, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'Strict',
+        secure: true,
+        sameSite: 'None',
         maxAge: 14 * 60 * 1000, // 14 minutes
         path: '/'
     });
@@ -28,14 +28,14 @@ export function setAccessToken(res, accessToken) {
 //REMOVE COOKIES
 export function removeRefreshToken(res) {
     res.cookie('refreshToken', '', {
-        httpOnly: true, secure: false, sameSite: 'Strict', maxAge: 0, path: '/'
+        httpOnly: true, secure: true, sameSite: 'None', maxAge: 0, path: '/'
     });
 }
 
 
 export function removeAccessToken(res) {
     res.cookie('accessToken', '', {
-        httpOnly: true, secure: false, sameSite: 'Strict', maxAge: 0, path: '/'
+        httpOnly: true, secure: true, sameSite: 'None', maxAge: 0, path: '/'
     });
 }
 

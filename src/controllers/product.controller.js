@@ -9,7 +9,7 @@ import { buildProductQuery } from '../utils/filterProducts.js';
 //GET PRODUCTS BY FILTERS
 export const filterProducts = async (req, res) => {
     const { sortPrice, color, size, page } = req.query;
-    const { skip, limit } = paginate(parseInt(page) || 1, 4);
+    const { skip, limit } = paginate(parseInt(page) || 1, 8);
 
     // Build the query dynamically
     const { filters, sortOptions } = buildProductQuery({ sortPrice, color, size });
@@ -41,7 +41,7 @@ export const filterProducts = async (req, res) => {
 export const getProductsByGenderAndCategory = async (req, res) => {
     const { gender, categoryName } = req.params;
     const { sortPrice, color, size, page } = req.query;
-    const { skip, limit } = paginate(parseInt(page) || 1, 5);
+    const { skip, limit } = paginate(parseInt(page) || 1, 8);
 
     if (!gender || !categoryName) {
         return res.status(400).json({ message: 'Gender and Category params are required' });
