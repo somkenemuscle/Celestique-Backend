@@ -34,7 +34,7 @@ export const initializePayment = async (req, res) => {
         {
             email: req.user.email,
             amount: amount * 100,
-            callback_url: 'http://localhost:3000/verify'
+            callback_url: 'https://celestique.vercel.app/verify'
         },
         {
             headers: {
