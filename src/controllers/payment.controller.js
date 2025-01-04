@@ -22,9 +22,8 @@ export const initializePayment = async (req, res) => {
     // Add shippingAddress to cookie
     res.cookie('shippingAddress', shippingAddress, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'Strict',
-        maxAge: 15 * 60 * 1000,
+        secure: true,
+        sameSite: 'None',
         path: '/',
     });
 
@@ -162,7 +161,7 @@ export const verifyPayment = async (req, res, next) => {
 
         //Remove shippingAddress from cookies
         res.cookie('shippingAddress', '', {
-            httpOnly: true, secure: false, sameSite: 'Strict', maxAge: 0, path: '/'
+            httpOnly: true, secure: true, sameSite: 'None', maxAge: 0, path: '/'
         });
 
         // Send success response
