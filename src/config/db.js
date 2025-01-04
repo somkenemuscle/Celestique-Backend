@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 export default function connectDb() {
     // Get the MongoDB connection URL from environment variables
-    const dbUrl = process.env.DB_URL;
+    const dbUrl = 'mongodb+srv://somkene:muscle$$090@celestiquecluster.uwhws.mongodb.net/?retryWrites=true&w=majority&appName=CelestiqueCluster';
 
     if (!dbUrl) {
         console.error('Database URL is not defined in the environment variables');
