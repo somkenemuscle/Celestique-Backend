@@ -19,6 +19,4 @@ router.get('/:gender/:categoryName', handleAsyncErr(getProductsByGenderAndCatego
 router.get('/:slug', handleAsyncErr(getProductBySlug));
 
 
-
-
 export default router;

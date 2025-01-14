@@ -7,8 +7,7 @@ import { refreshSecretKey } from '../auth/config.js';
 import { signUpSchema, signInSchema } from '../validators/authValidators.js';
 import { setRefreshToken, setAccessToken, removeAccessToken, removeRefreshToken } from '../utils/authCookies.js';
 import axios from 'axios'
-import dotenv from 'dotenv'
-dotenv.config();
+
 
 
 
@@ -21,7 +20,7 @@ export const signUpUser = async (req, res) => {
     const { firstname, lastname, email, password, phoneNumber, recaptchaToken } = req.body;
 
     // Verify reCAPTCHA token
-    const recaptchaResponse = await axios.post(`https://www.google.com/recaptcha/api/siteverify`, null, {
+    const recaptchaResponse = await axios.post(process.env.RECAPTCHA_VERIFICATION_URL, null, {
         params: {
             secret: process.env.RECAPTCHA_SECRET_KEY,
             response: recaptchaToken

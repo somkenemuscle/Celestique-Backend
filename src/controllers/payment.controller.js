@@ -30,11 +30,11 @@ export const initializePayment = async (req, res) => {
 
     // Make request to Paystack to initialize payment
     const response = await axios.post(
-        'https://api.paystack.co/transaction/initialize',
+        process.env.PAYSTACK_INITIALIZATION_URL,
         {
             email: req.user.email,
             amount: amount * 100,
-            callback_url: 'https://celestique.vercel.app/verify'
+            callback_url: process.env.PAYSTACK_CALLBACK_URL
         },
         {
             headers: {
@@ -70,7 +70,7 @@ export const verifyPayment = async (req, res, next) => {
     try {
         //1: Verify the transaction with Paystack
         const response = await axios.get(
-            `https://api.paystack.co/transaction/verify/${reference}`,
+            `${process.env.PAYSTACK_VERIFICATION_URL}/${reference}`,
             {
                 headers: { Authorization: `Bearer ${paystackSecretKey}` },
             }
@@ -119,7 +119,7 @@ export const verifyPayment = async (req, res, next) => {
             if (product.quantity < item.quantity) {
                 // Refund the payment immediately if stock is insufficient
                 const response = await axios.post(
-                    'https://api.paystack.co/refund',
+                    process.env.PAYSTACK_REFUND_URL,
                     {
                         transaction: reference, // Reference of the original transaction
                         amount: paidAmount * 100, // Amount in kobo
