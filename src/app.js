@@ -23,6 +23,9 @@ if (process.env.NODE_ENV !== 'production') {
 // Initialize Express application
 const app = express();
 
+// Enable 'trust proxy' to correctly use 'X-Forwarded-For' header
+app.set('trust proxy', true);
+
 // Use Morgan for logging HTTP requests
 app.use(morgan('dev'));
 
