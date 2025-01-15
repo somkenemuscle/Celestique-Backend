@@ -32,8 +32,14 @@ export const signUpUser = async (req, res) => {
     if (!success) return res.status(400).json({ message: 'reCAPTCHA verification failed' });
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(409).json({ message: 'User already exists' });
+    const existingUser = await User.findOne({
+        $or: [{ email }, { phoneNumber }],
+    });
+
+    if (existingUser) {
+        const field = existingUser.email === email ? 'email' : 'phone number';
+        return res.status(409).json({ message: `User with this ${field} already exists` });
+    }
 
     // Hash the password before storing in the database (hash and salt)
     const hashedPassword = await bcrypt.hash(password, 10);
