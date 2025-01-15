@@ -24,7 +24,8 @@ if (process.env.NODE_ENV !== 'production') {
 const app = express();
 
 // Enable 'trust proxy' to correctly use 'X-Forwarded-For' header
-app.set('trust proxy', true);
+app.set('trust proxy', 'loopback'); // Trust only loopback addresses (127.0.0.1)
+
 
 // Use Morgan for logging HTTP requests
 app.use(morgan('dev'));
