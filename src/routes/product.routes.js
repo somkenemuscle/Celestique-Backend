@@ -1,10 +1,8 @@
-import { getProductsByGenderAndCategory, getProductBySlug, findProductBySearch, filterProducts, getProductsByGender } from "../controllers/product.controller.js";
+import { getProductsByGenderAndCategory, getProductBySlug, findProductBySearch, filterProducts, getProductsByGender} from "../controllers/product.controller.js";
 import express from 'express';
 import handleAsyncErr from '../utils/catchAsync.js';
 
-
 const router = express.Router();
-
 
 router.get('/', handleAsyncErr(filterProducts));
 

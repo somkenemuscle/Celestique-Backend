@@ -39,8 +39,12 @@ export const addToCart = async (req, res) => {
         return res.status(400).json({ message: `Only ${availableQuantity} units of this product are available.` });
     }
 
-    // Find the user's cart 
-    let cart = await Cart.findOne({ user: userId });
+    // Find the user's cart or create a new one if it doesn't exist
+    const cart = await Cart.findOneAndUpdate(
+        { user: userId },
+        { $setOnInsert: { items: [] } },
+        { new: true, upsert: true }
+    );
 
     // Check if the same product, size, and color already exist in the cart
     const existingItemIndex = cart.items.findIndex(
