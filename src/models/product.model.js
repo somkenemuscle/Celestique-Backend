@@ -56,15 +56,13 @@ const productSchema = new Schema({
   });
 
 // Pre-save hook to generate the slug
-productSchema.pre('save', async function (next) {
+productSchema.pre('save', async function () {
 
   // If the product is new or slug is not already set, generate the slug
   if (!this.slug) {
     console.log("Generating slug for new product...");
     this.slug = await generateUniqueSlug(this.name); // Generate slug from the product name
   }
-
-  next();  // Proceed to save the product
 });
 
 

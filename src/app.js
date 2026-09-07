@@ -36,7 +36,7 @@ app.use(corsMiddleware);
 app.options('/{*path}', corsMiddleware);
 
 // Apply general rate limiter before any API processing
-app.use(throttle);
+// app.use(throttle);
 
 // To parse form data in POST request body
 app.use(express.urlencoded({ extended: true }));
