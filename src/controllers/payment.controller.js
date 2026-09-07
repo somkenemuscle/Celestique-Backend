@@ -49,7 +49,7 @@ export const initializePayment = async (req, res) => {
 
 
 // Verify payment with Paystack
-export const verifyPayment = async (req, res, next) => {
+export const verifyPayment = async (req, res) => {
     const { reference, totalAmount } = req.body;
     const { shippingAddress } = req.cookies;
 
@@ -179,6 +179,6 @@ export const verifyPayment = async (req, res, next) => {
         session.endSession();
 
         // Pass the error to the route handler
-        return res.status(500).json({ message: 'Payment verification failed', message: error.message });
+        return res.status(500).json({ message: 'Payment verification failed', error: error.message });
     }
 };
