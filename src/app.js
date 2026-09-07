@@ -33,7 +33,7 @@ app.use(morgan('dev'));
 // Use the CORS middleware
 app.use(corsMiddleware);
 
-app.options('*', corsMiddleware);
+app.options('/{*path}', corsMiddleware);
 
 // Apply general rate limiter before any API processing
 app.use(throttle);
@@ -76,7 +76,7 @@ app.use('/api/orders', orderRoutes);
 
 
 // Error handling middleware
-app.use((err, res) => {
+app.use((err, req, res, next) => {
     // Extract status and message from the error object, defaulting to 500 and a generic message
     const status = err.status || 500;
     const message = err.message || 'Something went wrong';

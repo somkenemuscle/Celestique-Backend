@@ -17,19 +17,8 @@ export const signUpUser = async (req, res) => {
     const { error } = signUpSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const { firstname, lastname, email, password, phoneNumber, recaptchaToken } = req.body;
+    const { firstname, lastname, email, password, phoneNumber} = req.body;
 
-    // Verify reCAPTCHA token
-    const recaptchaResponse = await axios.post(process.env.RECAPTCHA_VERIFICATION_URL, null, {
-        params: {
-            secret: process.env.RECAPTCHA_SECRET_KEY,
-            response: recaptchaToken
-        }
-    });
-
-    const { success } = recaptchaResponse.data;
-
-    if (!success) return res.status(400).json({ message: 'reCAPTCHA verification failed' });
 
     // Check if user already exists
     const existingUser = await User.findOne({
